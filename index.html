@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-key="title">ToGo - Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root { --primary: #00C853; --dark: #1B5E20; --bg-card: #f9f9f9; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            margin: 0; padding: 0; 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh;
+            /* 🟢 8K ব্যাকগ্রাউন্ড সিমুলেশন */
+            background-image: url('https://images.unsplash.com/photo-1546768292-fb12f116223e?q=80&w=2864&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .container { 
+            background: var(--bg-card); width: 100%; max-width: 400px; padding: 30px; border-radius: 25px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 2px solid white; position: relative; 
+            backdrop-filter: blur(5px);
+        }
+        
+        /* LANGUAGE TOGGLE BUTTON (Small and Cornered) */
+        #lang-toggle-btn {
+            position: absolute; right: 20px; top: 20px;
+            width: auto; padding: 8px 12px; font-size: 14px; font-weight: 700; background: #eee; color: #333;
+            border: 1px solid #ddd; border-radius: 8px; cursor: pointer; z-index: 100;
+        }
+
+        /* 3D LOGO & Animated Branding */
+        .logo-area { text-align: center; margin-bottom: 30px; }
+        h1 { 
+            font-size: 60px; margin: 0; color: var(--primary); font-weight: 900; text-transform: uppercase; line-height: 1; 
+            text-shadow: 10px 10px 20px rgba(0,0,0,0.3), 6px 6px 0 #004210;
+            animation: pulsate 3s ease-in-out infinite;
+        }
+        
+        /* 🟢 Bold, Green, Shadowed Tagline */
+        .tagline { 
+            margin-top: 10px; font-size: 16px; font-weight: 900; color: var(--primary); 
+            letter-spacing: 2px; text-shadow: 0 1px 1px rgba(0,0,0,0.4);
+        }
+
+        /* INPUTS */
+        .input-group { margin-bottom: 15px; }
+        .input-label { font-size: 13px; color: #555; font-weight: 600; margin-bottom: 5px; display: block; margin-left: 5px; } 
+
+        input, select { width: 100%; padding: 15px; border: 2px solid #c8e6c9; border-radius: 12px; background: #ffffff; color: #000000; font-size: 16px; font-weight: 600; font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 5px rgba(0, 200, 83, 0.5); }
+        
+        /* BUTTONS */
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer; text-transform: uppercase; margin-bottom: 10px; }
+        .btn-confirm-share { background: linear-gradient(145deg, #25D366, #128C7E); color: white; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); display: flex; justify-content: center; align-items: center; gap: 10px; }
+        
+        .btn-download { background: var(--dark); color: white; border: 2px solid var(--primary); font-size: 14px; }
+        .btn-new-ride { background: #eee; color: #333; font-size: 14px; }
+
+        /* TICKET */
+        #ticketScreen { display: none; }
+        .t-header { background: var(--primary); padding: 20px; text-align: center; color: white; }
+        .t-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #eee; padding-bottom: 8px; }
+        .t-lbl { font-size: 12px; color: #777; font-weight: 600; }
+        .t-val { font-size: 15px; color: #000; font-weight: 700; text-align: right; }
+        
+        /* ANIMATION KEYFRAMES */
+        @keyframes pulsate { 0%, 100% { transform: scale(1.0) rotate(-5deg); } 50% { transform: scale(1.01) rotate(-5deg); } }
+        .loader { display: none; margin: 20px auto; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <button id="lang-toggle-btn" onclick="toggleLanguage()"></button>
+
+    <div id="formSection">
+        <div class="logo-area">
+            <h1>ToGo</h1> 
+            <div class="tagline">FAST • GREEN • SAFE</div>
+        </div>
+
+        <form onsubmit="confirmAndShare(event)">
+            
+            <div class="input-group"><label class="input-label" data-key="name-label"></label><input type="text" id="name" name="Name" data-placeholder-bn="উদাহরণ: রাহুল দাস" data-placeholder-en="Ex: Rahul Das" required></div>
+            <div class="input-group"><label class="input-label" data-key="mobile-label"></label><input type="tel" id="mobile" name="Mobile" data-placeholder-bn="Ex: 987654xxxx" data-placeholder-en="Ex: 987654xxxx" required></div>
+
+            <div class="row" style="display:flex; gap:10px;">
+                <div class="input-group" style="flex:1"><label class="input-label" data-key="from-label"></label><input type="text" id="pickup" name="Pickup" data-placeholder-bn="স্টেশন" data-placeholder-en="Station" required></div>
+                <div class="input-group" style="flex:1"><label class="input-label" data-key="to-label"></label><input type="text" id="drop" name="Drop" data-placeholder-bn="কলেজ মোড়" data-placeholder-en="College More" required></div>
+            </div>
+
+            <div class="row" style="display:flex; gap:10px;">
+                <div class="input-group" style="flex:1"><label class="input-label" data-key="date-label"></label><input type="date" id="date" name="Date" required></div>
+                <div class="input-group" style="flex:1"><label class="input-label" data-key="time-label"></label><input type="time" id="time" name="Time" required></div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label" data-key="passengers-label"></label>
+                <select id="passenger" name="Passengers">
+                    <option value="1 Passenger" data-key="p1"></option>
+                    <option value="2 Passengers" data-key="p2"></option>
+                    <option value="3 Passengers" data-key="p3"></option>
+                    <option value="4 Passengers" data-key="p4"></option>
+                    <option value="5 Passengers" data-key="p5"></option>
+                    <option value="6 Passengers" data-key="p6"></option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-confirm-share">
+                <span style="font-size: 22px;">🟢</span> <span data-key="btn-confirm">CONFIRM & WHATSAPP</span>
+            </button>
+            <div class="loader" id="loader"></div>
+        </form>
+    </div>
+
+    <div id="ticketScreen">
+        <div id="ticketCaptureArea" style="padding: 10px; background: white;">
+            <div id="ticketWrapper" style="border-radius: 15px; overflow: hidden; border: 1px solid #eee;">
+                <div class="t-header">
+                    <div style="font-size: 40px;">✅</div>
+                    <h2 style="margin: 5px 0;" data-key="t-header">Booking Done</h2>
+                    <div style="font-size: 12px; opacity: 0.9;"><span data-key="t-id-prefix">Ticket ID:</span> <span id="t-id">...</span></div>
+                </div>
+                <div class="t-body" style="padding: 20px;">
+                    <div class="t-row"><span class="t-lbl" data-key="t-name-lbl">NAME</span><span class="t-val" id="t-name"></span></div>
+                    <div class="t-row"><span class="t-lbl" data-key="t-mobile-lbl">MOBILE</span><span class="t-val" id="t-mobile"></span></div>
+                    <div class="t-row"><span class="t-lbl" data-key="t-date-lbl">DATE</span><span class="t-val" id="t-date"></span></div>
+                    <div class="t-row"><span class="t-lbl" data-key="t-time-lbl">TIME</span><span class="t-val" id="t-time"></span></div>
+                    <div class="t-row"><span class="t-lbl" data-key="t-seats-lbl">SEATS</span><span class="t-val" id="t-seat"></span></div>
+                    <div class="t-row" style="border:none;"><span class="t-lbl" data-key="t-route-lbl">ROUTE</span><span class="t-val"><span id="t-pickup"></span> ➝ <span id="t-drop"></span></span></div>
+                </div>
+                <div style="background:#e8f5e9; color:#1b5e20; text-align:center; padding:10px; font-weight:bold; font-size:14px;">
+                    <span data-key="helpline-prefix">📞 Helpline:</span> +91 8515826841
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-download" onclick="downloadTicket()" data-key="btn-download">📥 DOWNLOAD TICKET</button>
+        <button class="btn btn-new-ride" onclick="location.reload()" data-key="btn-new-ride">Book New Ride</button>
+    </div>
+
+</div>
+
+<script>
+    // 🔴 আপনার Google Script URL (নতুন লিঙ্ক দিয়ে আপডেট করা হয়েছে)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysVtJgA1WI3kBf9d01xu1XX0Jm3XXN9vdjE9l7VQF6fX4nukxN_FZ9C1lleYGLp1QJVw/exec"; 
+    
+    // 🔴 ড্রাইভারের নম্বর
+    const DRIVER_NUMBER = "918515826841"; 
+    let currentLang = 'en'; 
+
+    // ✅ ভাষা ডেটা (Translation Data)
+    const translations = {
+        'bn': {
+            'title': 'টোগো - বুকিং',
+            'name-label': 'আপনার নাম লিখুন', 'mobile-label': 'মোবাইল নম্বর', 'from-label': 'কোথা থেকে', 'to-label': 'কোথায় যাবেন', 
+            'date-label': 'তারিখ', 'time-label': 'সময়', 'passengers-label': 'যাত্রী সংখ্যা',
+            'btn-confirm': 'নিশ্চিত করুন ও শেয়ার করুন', 'btn-download': '📥 টিকিট ডাউনলোড', 'btn-new-ride': 'নতুন বুকিং',
+            't-header': 'বুকিং সফল', 't-id-prefix': 'টিকিট আইডি:', 't-name-lbl': 'নাম', 't-mobile-lbl': 'মোবাইল',
+            't-date-lbl': 'তারিখ', 't-time-lbl': 'সময়', 't-seats-lbl': 'যাত্রী', 't-route-lbl': 'রুট',
+            'helpline-prefix': '📞 হেল্পলাইন:', 'p1': '১ জন যাত্রী', 'p2': '২ জন যাত্রী', 'p3': '৩ জন যাত্রী', 'p4': '৪ জন যাত্রী', 'p5': '৫ জন যাত্রী', 'p6': '৬ জন যাত্রী'
+        },
+        'en': {
+            'title': 'ToGo - Booking',
+            'name-label': 'Enter Your Name', 'mobile-label': 'Mobile Number', 'from-label': 'FROM', 'to-label': 'TO',
+            'date-label': 'DATE', 'time-label': 'TIME', 'passengers-label': 'PASSENGERS',
+            'btn-confirm': 'CONFIRM & WHATSAPP', 'btn-download': '📥 DOWNLOAD TICKET', 'btn-new-ride': 'Book New Ride',
+            't-header': 'Booking Done', 't-id-prefix': 'Ticket ID:', 't-name-lbl': 'NAME', 't-mobile-lbl': 'MOBILE',
+            't-date-lbl': 'DATE', 't-time-lbl': 'TIME', 't-seats-lbl': 'SEATS', 't-route-lbl': 'ROUTE',
+            'helpline-prefix': '📞 Helpline:', 'p1': '1 Passenger', 'p2': '2 Passengers', 'p3': '3 Passengers', 'p4': '4 Passengers', 'p5': '5 Passengers', 'p6': '6 Passengers'
+        }
+    };
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        const langData = translations[lang];
+        const toggleBtn = document.getElementById('lang-toggle-btn');
+        const elements = document.querySelectorAll('[data-key]');
+        
+        elements.forEach(element => {
+            const key = element.getAttribute('data-key');
+            if (langData[key]) {
+                element.innerText = langData[key];
+            }
+        });
+        
+        document.getElementById('name').placeholder = lang === 'bn' ? 'উদাহরণ: রাহুল দাস' : 'Ex: Rahul Das';
+        document.getElementById('mobile').placeholder = lang === 'bn' ? 'Ex: 987654xxxx' : 'Ex: 987654xxxx';
+        document.getElementById('pickup').placeholder = lang === 'bn' ? 'স্টেশন' : 'Station';
+        document.getElementById('drop').placeholder = lang === 'bn' ? 'কলেজ মোড়' : 'College More';
+        
+        if (lang === 'en') {
+            toggleBtn.innerText = 'BN'; 
+        } else {
+            toggleBtn.innerText = 'EN'; 
+        }
+    }
+
+    function toggleLanguage() {
+        const newLang = currentLang === 'en' ? 'bn' : 'en';
+        setLanguage(newLang);
+    }
+    
+    window.onload = function() {
+        const now = new Date();
+        document.getElementById('date').value = now.toISOString().split('T')[0];
+        document.getElementById('time').value = now.toTimeString().slice(0,5);
+        setLanguage('en'); 
+    };
+
+    function confirmAndShare(e) {
+        e.preventDefault();
+        const btn = document.querySelector('.btn-confirm-share');
+        const loader = document.getElementById('loader');
+        
+        const formData = {
+            Name: document.getElementById('name').value, 
+            Mobile: document.getElementById('mobile').value,
+            Pickup: document.getElementById('pickup').value, 
+            Drop: document.getElementById('drop').value,
+            Date: document.getElementById('date').value, 
+            Time: document.getElementById('time').value,
+            Passengers: document.getElementById('passenger').value, 
+            BookingId: 'TG' + Math.floor(Math.random() * 9000 + 1000)
+        };
+        
+        // 1. WhatsApp মেসেজ তৈরি এবং ওপেন করা
+        const langData = translations[currentLang];
+        
+        // ডেট ও টাইম ভ্যালু
+        const bookingDate = formData.Date || 'N/A';
+        const bookingTime = formData.Time || 'N/A';
+        
+        // ✅ ডেট ও টাইম লেবেল এবং ভ্যালু সহ মেসেজ তৈরি করা হচ্ছে
+        const text = `🛺 *নতুন বুকিং এলার্ট!* (ID: ${formData.BookingId})%0A` +
+                     `👤 ${langData['name-label']}: ${formData.Name}%0A` +
+                     `📱 ${langData['mobile-label']}: ${formData.Mobile}%0A` +
+                     `📍 ${langData['from-label']}: ${formData.Pickup}%0A` +
+                     `🏁 ${langData['to-label']}: ${formData.Drop}%0A` +
+                     `📅 ${langData['date-label']}: ${bookingDate}%0A` + 
+                     `🕒 ${langData['time-label']}: ${bookingTime}%0A` + 
+                     `👥 ${langData['passengers-label']}: ${formData.Passengers}`;
+                     
+        window.open(`https://wa.me/${DRIVER_NUMBER}?text=${text}`, '_blank');
+
+        // 2. Loading and Show Ticket
+        btn.style.display = 'none'; loader.style.display = 'block';
+        showTicket(formData);
+
+        // 3. Send to Google Sheet (ফর্ম-ডেটা পদ্ধতিতে)
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = SCRIPT_URL; 
+        form.style.display = 'none';
+
+        // ফর্মে সমস্ত ডেটা ইনপুট হিসেবে যোগ করা
+        for (const key in formData) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key; 
+            input.value = formData[key];
+            form.appendChild(input);
+        }
+
+        const iframe = document.createElement('iframe');
+        iframe.name = 'submit-iframe';
+        iframe.style.display = 'none';
+        
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        
+        form.target = 'submit-iframe'; 
+        form.submit(); 
+
+        // কিছুক্ষণের মধ্যে iframe এবং ফর্ম মুছে ফেলা
+        setTimeout(() => {
+            document.body.removeChild(form);
+            document.body.removeChild(iframe);
+        }, 3000);
+    }
+
+    function showTicket(data) {
+        document.getElementById('t-id').innerText = data.BookingId;
+        document.getElementById('t-name').innerText = data.Name;
+        document.getElementById('t-mobile').innerText = data.Mobile;
+        document.getElementById('t-date').innerText = data.Date;
+        document.getElementById('t-time').innerText = data.Time;
+        document.getElementById('t-seat').innerText = data.Passengers;
+        document.getElementById('t-pickup').innerText = data.Pickup;
+        document.getElementById('t-drop').innerText = data.Drop;
+
+        // Form hide and Ticket show
+        document.getElementById('formSection').style.display = 'none';
+        document.getElementById('ticketScreen').style.display = 'block';
+        document.getElementById('loader').style.display = 'none';
+        
+        window.scrollTo(0, 0); // পরের পেজে যাওয়ার জন্য স্ক্রল ফিক্স
+    }
+
+    function downloadTicket() {
+        const btn = document.querySelector('.btn-download');
+        btn.innerHTML = "Processing...";
+        const element = document.getElementById('ticketCaptureArea');
+        html2canvas(element, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+            const dataURL = canvas.toDataURL('image/png');
+            const blob = dataURItoBlob(dataURL);
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url; link.download = 'ToGo_Ticket.png';
+            document.body.appendChild(link); link.click();
+            document.body.removeChild(link);
+            btn.innerHTML = translations[currentLang]['btn-download']; 
+        });
+    }
+    function dataURItoBlob(dataURI) {
+        var byteString = atob(dataURI.split(',')[1]); var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        var ab = new ArrayBuffer(byteString.length); var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) { ia[i] = byteString.charCodeAt(i); } return new Blob([ab], {type: mimeString});
+    }
+</script>
+
+</body>
+</html>
